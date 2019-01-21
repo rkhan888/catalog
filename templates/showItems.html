@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Catalog App</title>
+</head>
+<body>
+    <h1>{{myCategory}}</h1>
+    {% for i in items %}
+    <ul>
+        <li><a href="{{url_for('itemInfo', category=myCategory, item=i.name)}}"> {{i.name}} </a></li>
+    </ul>
+    {%endfor%}
+</body>
+</html>

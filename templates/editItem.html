@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Catalog App</title>
+    </head>
+    <body>
+        <h1>Edit Item</h1>
+
+        <form action="{{url_for('editItem', category=item.cat_name, item=item.name)}}" method="POST">
+            <p>Title</p>
+            <input type="text" name="newName" placeholder="{{item.name}}">
+            <p>Description</p>
+            <input type="text" name="newDesc" placeholder="{{item.description}}">
+            <!--<p>Category</p>-->
+            <!--<input type="text" name="newCatagoryName" placeholder="Name here">-->
+
+            <input type="submit" value="Create">
+        </form>
+
+        <a href="{{url_for('itemInfo', category=item.cat_name, item=item.name)}}">Cancel</a>
+    </body>
+</html>

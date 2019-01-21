@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Catalog App</title>
+</head>
+<body>
+    <h1>{{item.name}}</h1>
+    <p>{{item.description}}</p>
+    <a href="{{url_for('editItem', category=myCategory, item=item.name)}}">Edit</a>
+    <a href="{{url_for('deleteItem', category=myCategory, item=item.name)}}">Delete</a>
+</body>
+</html>
