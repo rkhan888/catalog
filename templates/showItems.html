@@ -6,10 +6,22 @@
 </head>
 <body>
     <h1>{{myCategory}}</h1>
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+
+    {% for message in messages %}
+        <strong> {{ message }} </strong>
+    {% endfor %}
+
+    {% endif %}
+    {% endwith %}
+
     {% for i in items %}
     <ul>
         <li><a href="{{url_for('itemInfo', category=myCategory, item=i.name)}}"> {{i.name}} </a></li>
     </ul>
     {%endfor%}
+    <br><a href="{{url_for('showCategories')}}">Home</a><br>
 </body>
 </html>

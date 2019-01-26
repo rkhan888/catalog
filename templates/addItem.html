@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Catalog App</title>
+</head>
+<body>
+    <h1>Add Item</h1>
+
+        <form action="{{url_for('addItem')}}" method="POST">
+            <p>Title</p>
+            <input type="text" name="name">
+
+            <p>Description</p>
+            <input type="text" name="desc">
+
+            <p>Category</p>
+            <input type="radio" id="existingCatRadio" onclick="enableOptions()" name="category">Existing Category:
+            <select id="existingCat" name="catName" disabled>
+            {% for a in allCats %}
+              <option value="{{a.name}}">{{a.name}}</option>
+            {% endfor %}
+            </select><br>
+
+            <input type="radio" id="newCatRadio" onclick="enableOptions()" name="category">New Category:
+            <input type="text" id="newCat" name="catName" disabled><br>
+
+            <input type="submit" value="Create">
+        </form>
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+
+        {% for message in messages %}
+            <strong> {{ message }} </strong>
+        {% endfor %}
+
+        {% endif %}
+        {% endwith %}
+
+        <a href="{{url_for('showCategories')}}">Cancel</a><br>
+
+        <script>
+        function enableOptions() {
+            if(document.getElementById('existingCatRadio').checked)
+            {
+                document.getElementById("existingCat").disabled = false;
+                document.getElementById("newCat").disabled = true;
+            }
+            else if(document.getElementById('newCatRadio').checked)
+            {
+                document.getElementById("existingCat").disabled = true;
+                document.getElementById("newCat").disabled = false;
+            }
+
+        }
+        </script>
+
+</body>
+</html>

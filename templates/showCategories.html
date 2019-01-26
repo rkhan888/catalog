@@ -6,6 +6,7 @@
 </head>
 <body>
     <h1>Categories</h1>
+    <a href="{{url_for('addItem')}}">Add Item</a><br>
     {% for cat in categories %}
     <ul>
         <li><a href="{{url_for('showItems', category=cat.name)}}"> {{cat.name}}</a> </li>

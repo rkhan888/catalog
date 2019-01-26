@@ -12,8 +12,14 @@
             <input type="text" name="newName" placeholder="{{item.name}}">
             <p>Description</p>
             <input type="text" name="newDesc" placeholder="{{item.description}}">
-            <!--<p>Category</p>-->
-            <!--<input type="text" name="newCatagoryName" placeholder="Name here">-->
+            <p>Category</p>
+
+            <select name="newCat">
+            {% for a in allCats %}
+              <option value="{{a.name}}">{{a.name}}</option>
+            {% endfor %}
+            </select>
+
 
             <input type="submit" value="Create">
         </form>

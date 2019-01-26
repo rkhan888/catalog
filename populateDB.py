@@ -68,10 +68,6 @@ try:
     session.add(item5)
     session.commit()
 
-    item6 = Item(name="Snowboard", description="Slim and light snowboard", category=category3)
-
-    session.add(item6)
-    session.commit()
 
 
 
