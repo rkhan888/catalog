@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.exc import IntegrityError
+
 from catalogModels import Category, Item, Base
 
 engine = create_engine('sqlite:///catalog.db')
