@@ -6,11 +6,37 @@
 </head>
 <body>
     <h1>Categories</h1>
+
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+
+    {% for message in messages %}
+        <strong> {{ message }} </strong>
+    {% endfor %}
+
+    {% endif %}
+    {% endwith %}
+
+
+    <br><a id="login" href="{{url_for('showLogin')}}">Login</a><br>
+    <br><a id="logout" href="{{url_for('gdisconnect')}}">Logout</a><br>
     <a href="{{url_for('addItem')}}">Add Item</a><br>
     {% for cat in categories %}
     <ul>
         <li><a href="{{url_for('showItems', category=cat.name)}}"> {{cat.name}}</a> </li>
     </ul>
     {%endfor%}
+
+    <script>
+
+        if ({{loginStatus}} == 1){
+            document.getElementById("login").setAttribute("style","display:none");
+            document.getElementById("logout").setAttribute("style","display:block");
+        }
+        else{
+            document.getElementById("login").setAttribute("style","display:block");
+            document.getElementById("logout").setAttribute("style","display:none");
+        }
+    </script>
 </body>
 </html>

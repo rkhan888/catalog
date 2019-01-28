@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect,jsonify, url_for, flash
+
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 
@@ -10,6 +11,15 @@ import random
 import string
 
 # imports for gconnect method
+# flow_from_clientsecrets method will create a flow object from the client_secrets.json file.
+# this object will then contain client_id, client_secret and other oauth2 parameters
+# FlowExchangeError method will catch errors if we run into any while exchanging one-time auth code
+# for an access token
+# httplib2: an http client library in python
+# json: provides an API to convert in memory python objects to a serialize representation
+# make_response: converts the return value from a function into a real response object that we can send off
+# to the client
+# requests: an apache2 licsensed HTTP library written in python similar to urllib but with few improvements
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.client import FlowExchangeError
 import httplib2
@@ -20,39 +30,46 @@ import requests
 engine = create_engine('sqlite:///catalog.db')
 Base.metadata.bind = engine
 
-app = Flask(__name__)
-
 CLIENT_ID = json.loads(open('client_secrets.json', 'r').read())['web']['client_id']
 APPLICATION_NAME = "Catalog App"
+
 print("---clientID: " + CLIENT_ID)
 
-
-@app.route("/login")
+#Create anti-forgery state token
 def showLogin():
     state = "".join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
     login_session["state"] = state
     print("state: " + state)
     return render_template('login.html', STATE=state)
 
-@app.route('/gconnect', methods=['POST'])
+# @app.route('/gconnect', methods=['POST'])
 def gconnect():
     print("----Entered gConnect!")
     # Validate state token
     if request.args.get('state') != login_session['state']:
-        print("login_session does not match!")
+        print("---login_session does not match!")
         response = make_response(json.dumps('Invalid state parameter.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
     # Obtain authorization code
     code = request.data
 
-    print("Code: " + code)
+    print("---Code: " + code)
 
     try:
         # Upgrade the authorization code into a credentials object
+        print("---0")
         oauth_flow = flow_from_clientsecrets('client_secrets.json', scope='')
+        print("---1 oauthflow")
+        print(oauth_flow.client_secret)
+        print(oauth_flow.redirect_uri)
+        print(oauth_flow.auth_uri)
+        print(oauth_flow.token_uri)
         oauth_flow.redirect_uri = 'postmessage'
+        print("---2")
+        print(oauth_flow.redirect_uri)
         credentials = oauth_flow.step2_exchange(code)
+        print("---3")
         # print(credentials.to_json())
     except FlowExchangeError:
         response = make_response(
@@ -93,7 +110,8 @@ def gconnect():
     stored_access_token = login_session.get('access_token')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_access_token is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is already connected.'), 200)
+        response = make_response(json.dumps('Current user is already connected.'),
+                                 200)
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -110,7 +128,7 @@ def gconnect():
     # print("data:\n")
     # print(data)
 
-    if "name" in data:
+    if data["name"]:
         login_session['username'] = data['name']
     else:
         login_session['username'] = data['email']
@@ -139,7 +157,10 @@ def gconnect():
     return output
 
 
-@app.route('/gdisconnect')
+ # DISCONNECT - Revoke a current user's token and reset their login_session
+
+
+# @app.route('/gdisconnect')
 def gdisconnect():
     print("----In gdisconnect")
     access_token = login_session.get('access_token')
@@ -171,127 +192,10 @@ def gdisconnect():
         del login_session['username']
         del login_session['email']
         del login_session['picture']
-        flash("Successfully disconnected!")
-        return redirect(url_for("showCategories"))
+        response = make_response(json.dumps('Successfully disconnected.'), 200)
+        response.headers['Content-Type'] = 'application/json'
+        return response
     else:
         response = make_response(json.dumps('Failed to revoke token for given user.', 400))
         response.headers['Content-Type'] = 'application/json'
         return response
-
-
-@app.route("/")
-@app.route("/catalog")
-def showCategories():
-    DBSession = sessionmaker(bind=engine)
-    session = DBSession()
-
-    categories = session.query(Category).all()
-
-    if "username" not in login_session:
-        return render_template('showCategories.html', categories=categories, loginStatus=0)
-    else:
-        return render_template('showCategories.html', categories=categories, loginStatus=1)
-
-@app.route("/catalog/<category>/items")
-def showItems(category):
-    DBSession = sessionmaker(bind=engine)
-    session = DBSession()
-
-    items = session.query(Item).filter_by(cat_name=category).all()
-
-    return render_template('showItems.html', myCategory=category, items=items)
-
-@app.route("/catalog/<category>/<item>")
-def itemInfo(category, item):
-    DBSession = sessionmaker(bind=engine)
-    session = DBSession()
-
-    item = session.query(Item).filter(func.lower(Item.name) == func.lower(item), func.lower(Item.cat_name) == func.lower(category)).one()
-
-    return render_template('showItemInfo.html', myCategory=category, item=item)
-
-@app.route("/catalog/add", methods=["GET", "POST"])
-def addItem():
-    DBSession = sessionmaker(bind=engine)
-    session = DBSession()
-
-    allCats = session.query(Category).all()
-
-    if request.method == "POST":
-        existingCat = session.query(Category).filter(func.lower(Category.name) == func.lower(request.form["catName"])).all()
-
-        if (existingCat):
-            item = session.query(Item).filter(func.lower(Item.name) == func.lower(request.form["name"]), func.lower(Item.cat_name) == func.lower(existingCat[0].name)).all()
-            if (item):
-                flash("item already exist!")
-                return render_template("addItem.html", allCats=allCats)
-            print(existingCat[0].name)
-            newItem = Item(name=request.form["name"], description=request.form["desc"], cat_name=existingCat[0].name)
-            session.add(newItem)
-            session.commit()
-            flash("New Item Added!")
-            print("New Item Added!")
-            return redirect(url_for("showItems", category=existingCat[0].name))
-
-        newCat = Category(name=request.form["catName"])
-        session.add(newCat)
-        session.commit()
-
-        newItem = Item(name=request.form["name"], description=request.form["desc"], category=newCat)
-        session.add(newItem)
-        session.commit()
-        flash("New Category & Item Added!")
-        print("New Category & Item Added!")
-        return redirect(url_for("showItems", category=newCat.name))
-
-    else:
-        return render_template("addItem.html", allCats=allCats)
-
-@app.route("/catalog/<category>/<item>/edit", methods=["GET", "POST"])
-def editItem(category, item):
-    DBSession = sessionmaker(bind=engine)
-    session = DBSession()
-
-    allCats = session.query(Category).all()
-    itemToEdit = session.query(Item).filter(func.lower(Item.name) == func.lower(item), func.lower(Item.cat_name) == func.lower(category)).one()
-    if request.method == "POST":
-        if request.form["newName"]:
-            itemToEdit.name = request.form["newName"]
-        if request.form["newDesc"]:
-            itemToEdit.description = request.form["newDesc"]
-        if request.form["newCat"]:
-            itemToEdit.cat_name = request.form["newCat"]
-        session.add(itemToEdit)
-        session.commit()
-        flash("item updated")
-        return redirect(url_for("showItems", category=itemToEdit.cat_name))
-    else:
-        return render_template("editItem.html", item=itemToEdit, allCats=allCats)
-
-@app.route("/catalog/<category>/<item>/delete", methods=["GET", "POST"])
-def deleteItem(category, item):
-    DBSession = sessionmaker(bind=engine)
-    session = DBSession()
-
-    itemToDelete = session.query(Item).filter(func.lower(Item.name) == func.lower(item), func.lower(Item.cat_name) == func.lower(category)).one()
-    if request.method == "POST":
-        session.delete(itemToDelete)
-        session.commit()
-        flash("Item deleted successfully")
-        return redirect(url_for("showItems", category=itemToDelete.cat_name))
-    else:
-        return render_template("deleteItem.html", item=itemToDelete)
-
-@app.route("/catalog.json")
-def showJson():
-    DBSession = sessionmaker(bind=engine)
-    session = DBSession()
-
-    categories = session.query(Category).all()
-
-    return jsonify(Category= sorted([i.serialize for i in categories]))
-
-if __name__ == '__main__':
-    app.secret_key = "super secret key"
-    app.debug = True
-    app.run(host="0.0.0.0", port=5000)
