@@ -70,7 +70,7 @@ function signInCallback(authResult) {
 <script>
   window.fbAsyncInit = function() {
   FB.init({
-    appId      : '292000551456867',
+    appId      : '229692874493053',
     cookie     : true,  // enable cookies to allow the server to access
                         // the session
     xfbml      : true,  // parse social plugins on this page
@@ -85,8 +85,10 @@ function signInCallback(authResult) {
     js.src = "//connect.facebook.net/en_US/sdk.js";
     fjs.parentNode.insertBefore(js, fjs);
   }(document, 'script', 'facebook-jssdk'));
+
   // Here we run a very simple test of the Graph API after login is
   // successful.  See statusChangeCallback() for when this call is made.
+
   function sendTokenToServer() {
     var access_token = FB.getAuthResponse()['accessToken'];
     console.log(access_token)
@@ -104,7 +106,7 @@ function signInCallback(authResult) {
         if (result) {
           $('#result').html('Login Successful!</br>'+ result + '</br>Redirecting...')
          setTimeout(function() {
-          window.location.href = "/restaurant";
+          window.location.href = '{{url_for("showCategories")}}';
          }, 4000);
 
       } else {
