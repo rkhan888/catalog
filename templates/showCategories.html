@@ -18,9 +18,9 @@
     {% endwith %}
 
 
-    <br><a id="login" href="{{url_for('showLogin')}}">Login</a><br>
-    <br><a id="logout" href="{{url_for('disconnect')}}">Logout</a><br>
-    <a href="{{url_for('addItem')}}">Add Item</a><br>
+    <br><a id="login" href="{{url_for('showLogin')}}">Login</a>
+    <a id="logout" href="{{url_for('disconnect')}}">Logout</a><br>
+    <a id="addItem" href="{{url_for('addItem')}}">Add Item</a><br>
     {% for cat in categories %}
     <ul>
         <li><a href="{{url_for('showItems', category=cat.name)}}"> {{cat.name}}</a> </li>
@@ -32,10 +32,12 @@
         if ({{loginStatus}} == 1){
             document.getElementById("login").setAttribute("style","display:none");
             document.getElementById("logout").setAttribute("style","display:block");
+            document.getElementById("addItem").setAttribute("style","display:block");
         }
         else{
             document.getElementById("login").setAttribute("style","display:block");
             document.getElementById("logout").setAttribute("style","display:none");
+            document.getElementById("addItem").setAttribute("style","display:none");
         }
     </script>
 </body>

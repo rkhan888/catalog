@@ -7,8 +7,20 @@
 <body>
     <h1>{{item.name}}</h1>
     <p>{{item.description}}</p>
-    <a href="{{url_for('editItem', category=myCategory, item=item.name)}}">Edit</a>
-    <a href="{{url_for('deleteItem', category=myCategory, item=item.name)}}">Delete</a><br>
+    <a id="edit" href="{{url_for('editItem', category=myCategory, item=item.name)}}">Edit</a>
+    <a id="del" href="{{url_for('deleteItem', category=myCategory, item=item.name)}}">Delete</a><br>
     <a href="{{url_for('showCategories')}}">Home</a><br>
+
+    <script>
+
+        if ({{loginStatus}} == 1){
+            document.getElementById("edit").setAttribute("style","display:block");
+            document.getElementById("del").setAttribute("style","display:block");
+        }
+        else{
+            document.getElementById("edit").setAttribute("style","display:none");
+            document.getElementById("del").setAttribute("style","display:none");
+        }
+    </script>
 </body>
 </html>

@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, jso
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 
-from catalogModels import Category, Item, Base
+from catalogModels import Category, Item, User, Base
 
 #imports for anti-forgery step
 from flask import session as login_session
@@ -86,10 +86,10 @@ def fbconnect():
     login_session['picture'] = data["data"]["url"]
 
     # see if user exists
-    # user_id = getUserID(login_session['email'])
-    # if not user_id:
-    #     user_id = createUser(login_session)
-    # login_session['user_id'] = user_id
+    user_id = getUserID(login_session['email'])
+    if not user_id:
+        user_id = createUser(login_session)
+    login_session['user_id'] = user_id
 
     output = ''
     output += '<h1>Welcome, '
@@ -204,10 +204,10 @@ def gconnect():
 
     #Check to see if user exists in the DB. Create one if does not exist
     # see if user exists
-    # user_id = getUserID(data['email'])
-    # if not user_id:
-    #     user_id = createUser(login_session)
-    # login_session['user_id'] = user_id
+    user_id = getUserID(data['email'])
+    if not user_id:
+        user_id = createUser(login_session)
+    login_session['user_id'] = user_id
 
     output = ''
     output += '<h1>Welcome, '
@@ -279,7 +279,7 @@ def disconnect():
         del login_session['username']
         del login_session['email']
         del login_session['picture']
-        # del login_session['user_id']
+        del login_session['user_id']
         del login_session['provider']
         flash("You have successfully been logged out.")
         print("--loginSession After: ")
@@ -288,6 +288,40 @@ def disconnect():
     else:
         flash("You were not logged in")
         return redirect(url_for('showCategories'))
+
+
+# User Helper Functions
+
+
+def createUser(login_session):
+    DBSession = sessionmaker(bind=engine)
+    session = DBSession()
+
+    newUser = User(name=login_session['username'], email=login_session[
+                   'email'], picture=login_session['picture'])
+    session.add(newUser)
+    session.commit()
+    user = session.query(User).filter_by(email=login_session['email']).one()
+    return user.id
+
+
+def getUserInfo(user_id):
+    DBSession = sessionmaker(bind=engine)
+    session = DBSession()
+
+    user = session.query(User).filter_by(id=user_id).one()
+    return user
+
+
+def getUserID(email):
+    DBSession = sessionmaker(bind=engine)
+    session = DBSession()
+
+    try:
+        user = session.query(User).filter_by(email=email).one()
+        return user.id
+    except:
+        return None
 
 
 @app.route("/")
@@ -319,10 +353,16 @@ def itemInfo(category, item):
 
     item = session.query(Item).filter(func.lower(Item.name) == func.lower(item), func.lower(Item.cat_name) == func.lower(category)).one()
 
-    return render_template('showItemInfo.html', myCategory=category, item=item)
+    if "username" in login_session and login_session["user_id"] == item.user_id:
+        return render_template('showItemInfo.html', myCategory=category, item=item, loginStatus=1)
+    else:
+        return render_template('showItemInfo.html', myCategory=category, item=item, loginStatus=0)
 
 @app.route("/catalog/add", methods=["GET", "POST"])
 def addItem():
+    if "username" not in login_session:
+        return redirect(url_for("showLogin"))
+
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
 
@@ -337,7 +377,7 @@ def addItem():
                 flash("item already exist!")
                 return render_template("addItem.html", allCats=allCats)
             print(existingCat[0].name)
-            newItem = Item(name=request.form["name"], description=request.form["desc"], cat_name=existingCat[0].name)
+            newItem = Item(name=request.form["name"], description=request.form["desc"], cat_name=existingCat[0].name, user_id=login_session["user_id"])
             session.add(newItem)
             session.commit()
             flash("New Item Added!")
@@ -348,7 +388,7 @@ def addItem():
         session.add(newCat)
         session.commit()
 
-        newItem = Item(name=request.form["name"], description=request.form["desc"], category=newCat)
+        newItem = Item(name=request.form["name"], description=request.form["desc"], category=newCat, user_id=login_session["user_id"])
         session.add(newItem)
         session.commit()
         flash("New Category & Item Added!")
@@ -360,6 +400,9 @@ def addItem():
 
 @app.route("/catalog/<category>/<item>/edit", methods=["GET", "POST"])
 def editItem(category, item):
+    if "username" not in login_session:
+        return redirect(url_for("showLogin"))
+
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
 
@@ -381,6 +424,9 @@ def editItem(category, item):
 
 @app.route("/catalog/<category>/<item>/delete", methods=["GET", "POST"])
 def deleteItem(category, item):
+    if "username" not in login_session:
+        return redirect(url_for("showLogin"))
+
     DBSession = sessionmaker(bind=engine)
     session = DBSession()
 

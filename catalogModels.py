@@ -5,12 +5,22 @@ from sqlalchemy import create_engine
 
 Base = declarative_base()
 
+class User(Base):
+    __tablename__ = 'user'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(250), nullable=False)
+    email = Column(String(250), nullable=False)
+    picture = Column(String(250))
+
 class Category(Base):
     __tablename__ = "category"
 
     id = Column(Integer, primary_key=True)
     name = Column(String(80), unique=True, nullable=False)
+    # user_id = Column(Integer, ForeignKey('user.id'))
     items = relationship("Item")
+    # user = relationship(User)
 
     @property
     def serialize(self):
@@ -28,7 +38,9 @@ class Item(Base):
     name = Column(String (80), nullable=False)
     description = Column(String (250))
     cat_name = Column(String(80), ForeignKey("category.name"))
+    user_id = Column(Integer, ForeignKey('user.id'))
     category = relationship(Category)
+    user = relationship(User)
 
     @property
     def serialize(self):
