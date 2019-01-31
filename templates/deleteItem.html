@@ -1,16 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type=text/css href="{{ url_for('static', filename='style.css')}}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
     <title>Catalog App</title>
 </head>
 <body>
+<nav class="navbar navbar-inverse">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand">Catalog</a>
+    </div>
+    <ul class="nav navbar-nav">
+      <li class="active"><a href="{{url_for('showCategories')}}">Home</a></li>
+      <li><a id="addItem" href="{{url_for('addItem')}}">Add Item</a></li>
+    </ul>
+    <ul class="nav navbar-nav navbar-right">
+      <li><a id="logout" href="{{url_for('disconnect')}}"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container">
     <h1>Delete Item</h1>
     <form action="{{url_for('deleteItem', category=item.cat_name, item=item.name)}}" method="POST">
         <p>Are you sure you want to delete {{item.name}} from {{item.cat_name}} ?</p>
         <input type="submit" value="Delete">
     </form>
     <a href="{{url_for('itemInfo', category=item.cat_name, item=item.name)}}">Cancel</a>
-
+</div>
 </body>
 </html>
