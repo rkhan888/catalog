@@ -344,7 +344,10 @@ def showItems(category):
 
     items = session.query(Item).filter_by(cat_name=category).all()
 
-    return render_template('showItems.html', myCategory=category, items=items)
+    if "username" not in login_session:
+        return render_template('showItems.html', myCategory=category, items=items, loginStatus=0)
+    else:
+        return render_template('showItems.html', myCategory=category, items=items, loginStatus=1)
 
 @app.route("/catalog/<category>/<item>")
 def itemInfo(category, item):
@@ -353,10 +356,14 @@ def itemInfo(category, item):
 
     item = session.query(Item).filter(func.lower(Item.name) == func.lower(item), func.lower(Item.cat_name) == func.lower(category)).one()
 
-    if "username" in login_session and login_session["user_id"] == item.user_id:
-        return render_template('showItemInfo.html', myCategory=category, item=item, loginStatus=1)
+    if "username" in login_session and login_session["user_id"] != item.user_id:
+        return render_template('showItemInfo.html', myCategory=category, item=item, loginStatus=1, sameUser=0)
+
+    elif "username" in login_session and login_session["user_id"] == item.user_id:
+        return render_template('showItemInfo.html', myCategory=category, item=item, loginStatus=1, sameUser=1)
+
     else:
-        return render_template('showItemInfo.html', myCategory=category, item=item, loginStatus=0)
+        return render_template('showItemInfo.html', myCategory=category, item=item, loginStatus=0, sameUser=0)
 
 @app.route("/catalog/add", methods=["GET", "POST"])
 def addItem():

@@ -1,26 +1,64 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type=text/css href="{{ url_for('static', filename='style.css')}}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
     <title>Catalog App</title>
 </head>
+
 <body>
+<nav class="navbar navbar-inverse">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand">Catalog</a>
+    </div>
+    <ul class="nav navbar-nav">
+      <li class="active"><a href="{{url_for('showCategories')}}">Home</a></li>
+      <li><a id="addItem" href="{{url_for('addItem')}}">Add Item</a></li>
+    </ul>
+    <ul class="nav navbar-nav navbar-right">
+      <li><a id="logout" href="{{url_for('disconnect')}}"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+      <li><a id="login" href="{{url_for('showLogin')}}"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container">
     <h1>{{item.name}}</h1>
     <p>{{item.description}}</p>
-    <a id="edit" href="{{url_for('editItem', category=myCategory, item=item.name)}}">Edit</a>
-    <a id="del" href="{{url_for('deleteItem', category=myCategory, item=item.name)}}">Delete</a><br>
-    <a href="{{url_for('showCategories')}}">Home</a><br>
+    <a id="edit" style="text-decoration: none" href="{{url_for('editItem', category=myCategory, item=item.name)}}">Edit</a>
+    <a id="del" style="text-decoration: none" href="{{url_for('deleteItem', category=myCategory, item=item.name)}}">Delete</a><br>
 
     <script>
 
-        if ({{loginStatus}} == 1){
-            document.getElementById("edit").setAttribute("style","display:block");
-            document.getElementById("del").setAttribute("style","display:block");
+        if ({{loginStatus}} == 1 && {{sameUser}} ==  1){
+            document.getElementById("edit").setAttribute("style","display:inline-block");
+            document.getElementById("del").setAttribute("style","display:inline-block");
+            document.getElementById("login").setAttribute("style","display:none");
+            document.getElementById("logout").setAttribute("style","display:inline-block");
+            document.getElementById("addItem").setAttribute("style","display:inline-block");
+        }
+        else if ({{loginStatus}} == 1 && {{sameUser}} ==  0){
+            document.getElementById("edit").setAttribute("style","display:none");
+            document.getElementById("del").setAttribute("style","display:none");
+            document.getElementById("login").setAttribute("style","display:none");
+            document.getElementById("logout").setAttribute("style","display:inline-block");
+            document.getElementById("addItem").setAttribute("style","display:inline-block");
         }
         else{
             document.getElementById("edit").setAttribute("style","display:none");
             document.getElementById("del").setAttribute("style","display:none");
+            document.getElementById("login").setAttribute("style","display:inline-block");
+            document.getElementById("logout").setAttribute("style","display:none");
+            document.getElementById("addItem").setAttribute("style","display:none");
         }
     </script>
+</div>
 </body>
 </html>
