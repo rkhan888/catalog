@@ -4,8 +4,8 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type=text/css href="{{ url_for('static', filename='style.css')}}">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type=text/css href="{{ url_for('static', filename='style.css')}}">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
 
@@ -15,39 +15,46 @@
 <nav class="navbar navbar-inverse">
   <div class="container">
     <div class="navbar-header">
-      <a class="navbar-brand">Catalog</a>
+      <a href="{{url_for('showCategories')}}" class="navbar-brand">Catalog</a>
     </div>
     <ul class="nav navbar-nav">
       <li class="active"><a href="{{url_for('showCategories')}}">Home</a></li>
       <li><a id="addItem" href="{{url_for('addItem')}}">Add Item</a></li>
     </ul>
     <ul class="nav navbar-nav navbar-right">
-      <li><a id="logout" href="{{url_for('disconnect')}}"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
+        <li><a id="logout" href="{{url_for('disconnect')}}"><span class="glyphicon glyphicon-log-out"></span> {{login_session['username']}}</a></li>
+        <li><img id="userimg" class="img-circle" src="{{login_session['picture']}}" width="30" height="30"></li>
     </ul>
   </div>
 </nav>
 
 <div class="container">
-    <h1>Edit Item</h1>
+    <h1>Edit Item</h1
+    <div class="row-eq-height">
+        <div class="col-sm-12">
+            <form action="{{url_for('editItem', category=item.cat_name, item=item.name)}}" method="POST">
+                <h4>Title</h4>
+                <input type="text" name="newName" placeholder="{{item.name}}">
+                <br>
+                <h4>Description</h4>
+                <input type="text" name="newDesc" placeholder="{{item.description}}">
+                <br>
+                <h4>Category Name</h4>
 
-    <form action="{{url_for('editItem', category=item.cat_name, item=item.name)}}" method="POST">
-        <p>Title</p>
-        <input type="text" name="newName" placeholder="{{item.name}}">
-        <p>Description</p>
-        <input type="text" name="newDesc" placeholder="{{item.description}}">
-        <p>Category</p>
-
-        <select name="newCat">
-        {% for a in allCats %}
-          <option value="{{a.name}}">{{a.name}}</option>
-        {% endfor %}
-        </select>
+                <select name="newCat">
+                {% for a in allCats %}
+                  <option value="{{a.name}}">{{a.name}}</option>
+                {% endfor %}
+                </select>
 
 
-        <input type="submit" value="Create">
-    </form>
+                <input type="submit" value="Create">
+            </form>
 
-    <a href="{{url_for('itemInfo', category=item.cat_name, item=item.name)}}">Cancel</a>
+            <br>
+            <a href="{{url_for('itemInfo', category=item.cat_name, item=item.name)}}">Cancel</a>
+        </div>
+    </div>
 </div>
 </body>
 </html>

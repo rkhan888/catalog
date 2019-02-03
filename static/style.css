@@ -1,8 +1,59 @@
-.navbar-default {
-    background-color: #F8F8F8;
-    border-color: #E7E7E7;
+li {
+	text-decoration: none;
+	list-style-type: none;
 }
 
-li {
-  list-style-type: none;
+a:hover{
+	text-decoration: none;
 }
+
+.col-sm{
+	background-color: lavender; 
+	border: 1px solid lavender;
+	border-radius: 5px;
+}
+
+.col-sm-4{
+	background-color: lavender; 
+	border: 1px solid lavender;
+	border-radius: 5px;
+}
+
+.col-sm-8{
+	background-color: lavenderblush; 
+	border: 1px solid lavenderblush;
+	border-radius: 5px;
+}
+
+.col-sm-12{
+	background-color: lavenderblush; 
+	border: 1px solid lavenderblush;
+	border-radius: 5px;
+}
+
+.disc{
+	margin-top: 10px;
+	margin-bottom: -5px;
+	margin-right: 10px;
+	margin-left: 10px;
+}
+
+.thick {
+	font-size: 15px;
+	font-weight: bold;
+	display: inline;
+}
+
+.text-muted-italics{
+    opacity: 0.8;
+    font-style: italic;
+	display: inline;
+}
+
+.row-eq-height {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display:         flex;
+}
+

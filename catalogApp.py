@@ -331,11 +331,12 @@ def showCategories():
     session = DBSession()
 
     categories = session.query(Category).all()
+    latestItems = session.query(Item).order_by(Item.id.desc()).limit(8)
 
     if "username" not in login_session:
-        return render_template('showCategories.html', categories=categories, loginStatus=0)
+        return render_template('showCategories.html', categories=categories, latestItems=latestItems, loginStatus=0, login_session=login_session)
     else:
-        return render_template('showCategories.html', categories=categories, loginStatus=1)
+        return render_template('showCategories.html', categories=categories, latestItems=latestItems, loginStatus=1, login_session=login_session)
 
 @app.route("/catalog/<category>/items")
 def showItems(category):
@@ -345,9 +346,9 @@ def showItems(category):
     items = session.query(Item).filter_by(cat_name=category).all()
 
     if "username" not in login_session:
-        return render_template('showItems.html', myCategory=category, items=items, loginStatus=0)
+        return render_template('showItems.html', myCategory=category, items=items, loginStatus=0, login_session=login_session)
     else:
-        return render_template('showItems.html', myCategory=category, items=items, loginStatus=1)
+        return render_template('showItems.html', myCategory=category, items=items, loginStatus=1, login_session=login_session)
 
 @app.route("/catalog/<category>/<item>")
 def itemInfo(category, item):
@@ -357,13 +358,13 @@ def itemInfo(category, item):
     item = session.query(Item).filter(func.lower(Item.name) == func.lower(item), func.lower(Item.cat_name) == func.lower(category)).one()
 
     if "username" in login_session and login_session["user_id"] != item.user_id:
-        return render_template('showItemInfo.html', myCategory=category, item=item, loginStatus=1, sameUser=0)
+        return render_template('showItemInfo.html', myCategory=category, item=item, loginStatus=1, sameUser=0, login_session=login_session)
 
     elif "username" in login_session and login_session["user_id"] == item.user_id:
-        return render_template('showItemInfo.html', myCategory=category, item=item, loginStatus=1, sameUser=1)
+        return render_template('showItemInfo.html', myCategory=category, item=item, loginStatus=1, sameUser=1, login_session=login_session)
 
     else:
-        return render_template('showItemInfo.html', myCategory=category, item=item, loginStatus=0, sameUser=0)
+        return render_template('showItemInfo.html', myCategory=category, item=item, loginStatus=0, sameUser=0, login_session=login_session)
 
 @app.route("/catalog/add", methods=["GET", "POST"])
 def addItem():
@@ -403,7 +404,7 @@ def addItem():
         return redirect(url_for("showItems", category=newCat.name))
 
     else:
-        return render_template("addItem.html", allCats=allCats)
+        return render_template("addItem.html", allCats=allCats, login_session=login_session)
 
 @app.route("/catalog/<category>/<item>/edit", methods=["GET", "POST"])
 def editItem(category, item):
@@ -427,7 +428,7 @@ def editItem(category, item):
         flash("item updated")
         return redirect(url_for("showItems", category=itemToEdit.cat_name))
     else:
-        return render_template("editItem.html", item=itemToEdit, allCats=allCats)
+        return render_template("editItem.html", item=itemToEdit, allCats=allCats, login_session=login_session)
 
 @app.route("/catalog/<category>/<item>/delete", methods=["GET", "POST"])
 def deleteItem(category, item):
@@ -444,7 +445,7 @@ def deleteItem(category, item):
         flash("Item deleted successfully")
         return redirect(url_for("showItems", category=itemToDelete.cat_name))
     else:
-        return render_template("deleteItem.html", item=itemToDelete)
+        return render_template("deleteItem.html", item=itemToDelete, login_session=login_session)
 
 @app.route("/catalog.json")
 def showJson():

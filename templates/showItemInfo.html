@@ -4,8 +4,8 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type=text/css href="{{ url_for('static', filename='style.css')}}">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type=text/css href="{{ url_for('static', filename='style.css')}}">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
 
@@ -16,24 +16,29 @@
 <nav class="navbar navbar-inverse">
   <div class="container">
     <div class="navbar-header">
-      <a class="navbar-brand">Catalog</a>
+      <a href="{{url_for('showCategories')}}" class="navbar-brand">Catalog</a>
     </div>
     <ul class="nav navbar-nav">
       <li class="active"><a href="{{url_for('showCategories')}}">Home</a></li>
       <li><a id="addItem" href="{{url_for('addItem')}}">Add Item</a></li>
     </ul>
     <ul class="nav navbar-nav navbar-right">
-      <li><a id="logout" href="{{url_for('disconnect')}}"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>
-      <li><a id="login" href="{{url_for('showLogin')}}"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+        <li><a id="logout" href="{{url_for('disconnect')}}"><span class="glyphicon glyphicon-log-out"></span> {{login_session['username']}}</a></li>
+        <li><img id="userimg" class="img-circle" src="{{login_session['picture']}}" width="30" height="30"></li>
+        <li><a id="login" href="{{url_for('showLogin')}}"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
     </ul>
   </div>
 </nav>
 
 <div class="container">
     <h1>{{item.name}}</h1>
-    <p>{{item.description}}</p>
-    <a id="edit" style="text-decoration: none" href="{{url_for('editItem', category=myCategory, item=item.name)}}">Edit</a>
-    <a id="del" style="text-decoration: none" href="{{url_for('deleteItem', category=myCategory, item=item.name)}}">Delete</a><br>
+    <div class="row-eq-height">
+        <div class="col-sm-12">
+            <p class="disc"> {{item.description}}</p>
+           <a class="disc" id="edit" style="text-decoration: none" href="{{url_for('editItem', category=myCategory, item=item.name)}}">Edit</a>
+            <a class="disc" id="del" style="text-decoration: none" href="{{url_for('deleteItem', category=myCategory, item=item.name)}}">Delete</a><br>
+        </div>
+    </div>
 
     <script>
 
@@ -43,6 +48,7 @@
             document.getElementById("login").setAttribute("style","display:none");
             document.getElementById("logout").setAttribute("style","display:inline-block");
             document.getElementById("addItem").setAttribute("style","display:inline-block");
+            document.getElementById("userimg").setAttribute("style","display:inline-block");
         }
         else if ({{loginStatus}} == 1 && {{sameUser}} ==  0){
             document.getElementById("edit").setAttribute("style","display:none");
@@ -50,6 +56,7 @@
             document.getElementById("login").setAttribute("style","display:none");
             document.getElementById("logout").setAttribute("style","display:inline-block");
             document.getElementById("addItem").setAttribute("style","display:inline-block");
+            document.getElementById("userimg").setAttribute("style","display:inline-block");
         }
         else{
             document.getElementById("edit").setAttribute("style","display:none");
@@ -57,6 +64,7 @@
             document.getElementById("login").setAttribute("style","display:inline-block");
             document.getElementById("logout").setAttribute("style","display:none");
             document.getElementById("addItem").setAttribute("style","display:none");
+            document.getElementById("userimg").setAttribute("style","display:none");
         }
     </script>
 </div>
