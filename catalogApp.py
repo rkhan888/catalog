@@ -231,29 +231,12 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
 
-    # print('access_token is: ')
-    # print(login_session['access_token'])
-    # print('gplus_id is: ')
-    # print(login_session['gplus_id'])
-    # print('User name is: ')
-    # print(login_session['username'])
-    # print('email is: ')
-    # print(login_session['email'])
-    # print('picture is: ')
-    # print(login_session['picture'])
-
     url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
     h = httplib2.Http()
     result = h.request(url, 'GET')[0]
     print('result is ')
     print(result)
     if result['status'] == '200':
-        # del login_session['access_token']
-        # del login_session['gplus_id']
-        # del login_session['username']
-        # del login_session['email']
-        # del login_session['picture']
-        flash("Successfully disconnected!")
         response = make_response(json.dumps('Successfully disconnected.'), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
@@ -383,7 +366,7 @@ def addItem():
             item = session.query(Item).filter(func.lower(Item.name) == func.lower(request.form["name"]), func.lower(Item.cat_name) == func.lower(existingCat[0].name)).all()
             if (item):
                 flash("item already exist!")
-                return render_template("addItem.html", allCats=allCats)
+                return render_template("addItem.html", allCats=allCats, login_session=login_session)
             print(existingCat[0].name)
             newItem = Item(name=request.form["name"], description=request.form["desc"], cat_name=existingCat[0].name, user_id=login_session["user_id"])
             session.add(newItem)

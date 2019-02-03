@@ -7,25 +7,13 @@ a:hover{
 	text-decoration: none;
 }
 
-.col-sm{
+.col-sm, .col-sm-4{
 	background-color: lavender; 
 	border: 1px solid lavender;
 	border-radius: 5px;
 }
 
-.col-sm-4{
-	background-color: lavender; 
-	border: 1px solid lavender;
-	border-radius: 5px;
-}
-
-.col-sm-8{
-	background-color: lavenderblush; 
-	border: 1px solid lavenderblush;
-	border-radius: 5px;
-}
-
-.col-sm-12{
+.col-sm-8, .col-sm-12{
 	background-color: lavenderblush; 
 	border: 1px solid lavenderblush;
 	border-radius: 5px;
@@ -55,5 +43,9 @@ a:hover{
   display: -webkit-flex;
   display: -ms-flexbox;
   display:         flex;
+}
+
+.img-circle{
+	margin-top: 10px;
 }
 

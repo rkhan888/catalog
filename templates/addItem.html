@@ -61,7 +61,11 @@
             {% if messages %}
 
             {% for message in messages %}
-                <strong> {{ message }} </strong>
+            <div class="row-eq-height">
+                <div class="col-sm-12">
+                    <strong> {{ message }} </strong>
+                </div>
+            </div>
             {% endfor %}
 
             {% endif %}
