@@ -1,10 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, \
+    jsonify
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
 
 from catalogModels import Category, Item, User, Base
 
-#imports for anti-forgery step
+# imports for anti-forgery step
 from flask import session as login_session
 import random
 import string
@@ -22,17 +23,20 @@ Base.metadata.bind = engine
 
 app = Flask(__name__)
 
-CLIENT_ID = json.loads(open('client_secrets.json', 'r').read())['web']['client_id']
+CLIENT_ID = json.loads(open('client_secrets.json', 'r')
+                       .read())['web']['client_id']
 APPLICATION_NAME = "Catalog App"
 print("---clientID: " + CLIENT_ID)
 
 
 @app.route("/login")
 def showLogin():
-    state = "".join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
+    state = "".join(random.choice(string.ascii_uppercase + string.digits)
+                    for x in xrange(32))
     login_session["state"] = state
     print("state: " + state)
     return render_template('login.html', STATE=state)
+
 
 @app.route('/fbconnect', methods=['POST'])
 def fbconnect():
@@ -42,24 +46,29 @@ def fbconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
     access_token = request.data
-    print ("FB access token received %s ") % access_token
+    print("FB access token received %s ") % access_token
 
-
-    app_id = json.loads(open('fb_client_secrets.json', 'r').read())['web']['app_id']
-    app_secret = json.loads(open('fb_client_secrets.json', 'r').read())['web']['app_secret']
-    url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (
-        app_id, app_secret, access_token)
+    app_id = json.loads(open('fb_client_secrets.json', 'r')
+                        .read())['web']['app_id']
+    app_secret = json.loads(open('fb_client_secrets.json', 'r')
+                            .read())['web']['app_secret']
+    url = 'https://graph.facebook.com/oauth/access_token?grant_' \
+          'type=fb_exchange_token&client_id=%s&' \
+          'client_secret=%s&fb_exchange_token=%s' % \
+          (app_id, app_secret, access_token)
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
-
 
     # Use token to get user info from API
     userinfo_url = "https://graph.facebook.com/v2.8/me"
     '''
-        Due to the formatting for the result from the server token exchange we have to
-        split the token first on commas and select the first index which gives us the key : value
-        for the server access token then we split it on colons to pull out the actual token value
-        and replace the remaining quotes with nothing so that it can be used directly in the graph
+        Due to the formatting for the result from the server
+        token exchange we have to split the token first on
+        commas and select the first index which gives us the
+        key : value for the server access token then we split it
+        on colons to pull out the actual token value
+        and replace the remaining quotes with nothing
+        so that it can be used directly in the graph
         api calls
     '''
     token = result.split(',')[0].split(':')[1].replace('"', '')

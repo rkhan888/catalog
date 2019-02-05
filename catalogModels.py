@@ -18,9 +18,7 @@ class Category(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(80), unique=True, nullable=False)
-    # user_id = Column(Integer, ForeignKey('user.id'))
     items = relationship("Item")
-    # user = relationship(User)
 
     @property
     def serialize(self):
@@ -48,7 +46,8 @@ class Item(Base):
         return {
             'name': self.name,
             'description': self.description,
-            'id': self.id
+            'id': self.id,
+            'cat_id': self.category.id
         }
 
 engine = create_engine('sqlite:///catalog.db')
