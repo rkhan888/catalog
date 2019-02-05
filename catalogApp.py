@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, \
     jsonify
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.exc import NoResultFound
 
 from catalogModels import Category, Item, User, Base
 
@@ -20,6 +21,7 @@ import requests
 
 engine = create_engine('sqlite:///catalog.db')
 Base.metadata.bind = engine
+DBSession = sessionmaker(bind=engine)
 
 app = Flask(__name__)
 
@@ -73,7 +75,8 @@ def fbconnect():
     '''
     token = result.split(',')[0].split(':')[1].replace('"', '')
 
-    url = 'https://graph.facebook.com/v2.8/me?access_token=%s&fields=name,id,email' % token
+    url = 'https://graph.facebook.com/v2.8/me?access_token=%s&' \
+          'fields=name,id,email' % token
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
     # print "url sent for API access:%s"% url
@@ -88,7 +91,8 @@ def fbconnect():
     login_session['access_token'] = token
 
     # Get user picture
-    url = 'https://graph.facebook.com/v2.8/me/picture?access_token=%s&redirect=0&height=200&width=200' % token
+    url = 'https://graph.facebook.com/v2.8/me/picture?access_token=%s&' \
+          'redirect=0&height=200&width=200' % token
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
     data = json.loads(result)
@@ -107,7 +111,9 @@ def fbconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 300px; height: 300px;' \
+              'border-radius: 150px;-webkit-border-radius: 150px;' \
+              '-moz-border-radius: 150px;"> '
 
     flash("Now logged in as %s" % login_session['username'])
     return output
@@ -119,7 +125,8 @@ def fbdisconnect():
     facebook_id = login_session['facebook_id']
     # The access token must me included to successfully logout
     access_token = login_session['access_token']
-    url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (facebook_id,access_token)
+    url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (
+        facebook_id, access_token)
     h = httplib2.Http()
     result = h.request(url, 'DELETE')[1]
     return "you have been logged out"
@@ -184,7 +191,8 @@ def gconnect():
     stored_access_token = login_session.get('access_token')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_access_token is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is already connected.'), 200)
+        response = make_response(json.dumps(
+            'Current user is already connected.'), 200)
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -211,7 +219,7 @@ def gconnect():
     # ADD PROVIDER TO LOGIN SESSION
     login_session['provider'] = 'google'
 
-    #Check to see if user exists in the DB. Create one if does not exist
+    # Check to see if user exists in the DB. Create one if does not exist
     # see if user exists
     user_id = getUserID(data['email'])
     if not user_id:
@@ -224,7 +232,9 @@ def gconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;' \
+              '-webkit-border-radius: 150px;' \
+              '-moz-border-radius: 150px;"> '
     flash("you are now logged in as %s" % login_session['username'])
     print("done!")
     return output
@@ -236,7 +246,8 @@ def gdisconnect():
     access_token = login_session.get('access_token')
     if access_token is None:
         print('Access Token is None')
-        response = make_response(json.dumps('Current user not connected.'), 401)
+        response = make_response(json.dumps(
+            'Current user not connected.'), 401)
         response.headers['Content-Type'] = 'application/json'
         return response
 
@@ -250,11 +261,14 @@ def gdisconnect():
         response.headers['Content-Type'] = 'application/json'
         return response
     else:
-        response = make_response(json.dumps('Failed to revoke token for given user.', 400))
+        response = make_response(json.dumps(
+            'Failed to revoke token for given user.', 400))
         response.headers['Content-Type'] = 'application/json'
         return response
 
 # Disconnect based on provider
+
+
 @app.route('/disconnect')
 def disconnect():
     print("----Entered disconnect!")
@@ -286,7 +300,6 @@ def disconnect():
 
 
 def createUser(login_session):
-    DBSession = sessionmaker(bind=engine)
     session = DBSession()
 
     newUser = User(name=login_session['username'], email=login_session[
@@ -298,7 +311,6 @@ def createUser(login_session):
 
 
 def getUserInfo(user_id):
-    DBSession = sessionmaker(bind=engine)
     session = DBSession()
 
     user = session.query(User).filter_by(id=user_id).one()
@@ -306,78 +318,102 @@ def getUserInfo(user_id):
 
 
 def getUserID(email):
-    DBSession = sessionmaker(bind=engine)
     session = DBSession()
 
     try:
         user = session.query(User).filter_by(email=email).one()
         return user.id
-    except:
+    except NoResultFound:
         return None
 
 
 @app.route("/")
 @app.route("/catalog")
 def showCategories():
-    DBSession = sessionmaker(bind=engine)
     session = DBSession()
 
     categories = session.query(Category).all()
     latestItems = session.query(Item).order_by(Item.id.desc()).limit(8)
 
     if "username" not in login_session:
-        return render_template('showCategories.html', categories=categories, latestItems=latestItems, loginStatus=0, login_session=login_session)
+        return render_template('showCategories.html', categories=categories,
+                               latestItems=latestItems, loginStatus=0,
+                               login_session=login_session)
     else:
-        return render_template('showCategories.html', categories=categories, latestItems=latestItems, loginStatus=1, login_session=login_session)
+        return render_template('showCategories.html', categories=categories,
+                               latestItems=latestItems, loginStatus=1,
+                               login_session=login_session)
+
 
 @app.route("/catalog/<category>/items")
 def showItems(category):
-    DBSession = sessionmaker(bind=engine)
     session = DBSession()
 
     items = session.query(Item).filter_by(cat_name=category).all()
 
     if "username" not in login_session:
-        return render_template('showItems.html', myCategory=category, items=items, loginStatus=0, login_session=login_session)
+        return render_template('showItems.html', myCategory=category,
+                               items=items, loginStatus=0,
+                               login_session=login_session)
     else:
-        return render_template('showItems.html', myCategory=category, items=items, loginStatus=1, login_session=login_session)
+        return render_template('showItems.html', myCategory=category,
+                               items=items, loginStatus=1,
+                               login_session=login_session)
+
 
 @app.route("/catalog/<category>/<item>")
 def itemInfo(category, item):
-    DBSession = sessionmaker(bind=engine)
     session = DBSession()
 
-    item = session.query(Item).filter(func.lower(Item.name) == func.lower(item), func.lower(Item.cat_name) == func.lower(category)).one()
+    item = session.query(Item).filter(func.lower(Item.name) == func.lower(
+        item), func.lower(Item.cat_name) == func.lower(category)).one()
 
-    if "username" in login_session and login_session["user_id"] != item.user_id:
-        return render_template('showItemInfo.html', myCategory=category, item=item, loginStatus=1, sameUser=0, login_session=login_session)
+    if "username" in login_session and \
+            login_session["user_id"] != item.user_id:
+        return render_template('showItemInfo.html', myCategory=category,
+                               item=item, loginStatus=1, sameUser=0,
+                               login_session=login_session)
 
-    elif "username" in login_session and login_session["user_id"] == item.user_id:
-        return render_template('showItemInfo.html', myCategory=category, item=item, loginStatus=1, sameUser=1, login_session=login_session)
+    elif "username" in login_session and \
+            login_session["user_id"] == item.user_id:
+        return render_template('showItemInfo.html', myCategory=category,
+                               item=item, loginStatus=1, sameUser=1,
+                               login_session=login_session)
 
     else:
-        return render_template('showItemInfo.html', myCategory=category, item=item, loginStatus=0, sameUser=0, login_session=login_session)
+        return render_template('showItemInfo.html', myCategory=category,
+                               item=item, loginStatus=0, sameUser=0,
+                               login_session=login_session)
+
 
 @app.route("/catalog/add", methods=["GET", "POST"])
 def addItem():
     if "username" not in login_session:
         return redirect(url_for("showLogin"))
 
-    DBSession = sessionmaker(bind=engine)
     session = DBSession()
 
     allCats = session.query(Category).all()
 
     if request.method == "POST":
-        existingCat = session.query(Category).filter(func.lower(Category.name) == func.lower(request.form["catName"])).all()
+        existingCat = session.query(Category).filter(func.lower(
+            Category.name) == func.lower(request.form["catName"])).all()
 
         if (existingCat):
-            item = session.query(Item).filter(func.lower(Item.name) == func.lower(request.form["name"]), func.lower(Item.cat_name) == func.lower(existingCat[0].name)).all()
+            item = session.query(Item)\
+                .filter(func.lower(Item.name) == func
+                        .lower(request.form["name"]),
+                        func.lower(Item.cat_name) == func
+                        .lower(existingCat[0].name)).all()
             if (item):
                 flash("item already exist!")
-                return render_template("addItem.html", allCats=allCats, login_session=login_session)
+                return render_template("addItem.html", allCats=allCats,
+                                       login_session=login_session)
             print(existingCat[0].name)
-            newItem = Item(name=request.form["name"], description=request.form["desc"], cat_name=existingCat[0].name, user_id=login_session["user_id"])
+            newItem = Item(name=request.form["name"],
+                           description=request.form["desc"],
+                           cat_name=existingCat[0].name,
+                           user_id=login_session["user_id"])
             session.add(newItem)
             session.commit()
             flash("New Item Added!")
@@ -388,7 +424,10 @@ def addItem():
         session.add(newCat)
         session.commit()
 
-        newItem = Item(name=request.form["name"], description=request.form["desc"], category=newCat, user_id=login_session["user_id"])
+        newItem = Item(name=request.form["name"],
+                       description=request.form["desc"],
+                       category=newCat,
+                       user_id=login_session["user_id"])
         session.add(newItem)
         session.commit()
         flash("New Category & Item Added!")
@@ -396,18 +435,21 @@ def addItem():
         return redirect(url_for("showItems", category=newCat.name))
 
     else:
-        return render_template("addItem.html", allCats=allCats, login_session=login_session)
+        return render_template("addItem.html", allCats=allCats,
+                               login_session=login_session)
+
 
 @app.route("/catalog/<category>/<item>/edit", methods=["GET", "POST"])
 def editItem(category, item):
     if "username" not in login_session:
         return redirect(url_for("showLogin"))
 
-    DBSession = sessionmaker(bind=engine)
     session = DBSession()
 
     allCats = session.query(Category).all()
-    itemToEdit = session.query(Item).filter(func.lower(Item.name) == func.lower(item), func.lower(Item.cat_name) == func.lower(category)).one()
+    itemToEdit = session.query(Item).\
+        filter(func.lower(Item.name) == func.lower(item),
+               func.lower(Item.cat_name) == func.lower(category)).one()
     if request.method == "POST":
         if request.form["newName"]:
             itemToEdit.name = request.form["newName"]
@@ -420,33 +462,38 @@ def editItem(category, item):
         flash("item updated")
         return redirect(url_for("showItems", category=itemToEdit.cat_name))
     else:
-        return render_template("editItem.html", item=itemToEdit, allCats=allCats, login_session=login_session)
+        return render_template("editItem.html", item=itemToEdit,
+                               allCats=allCats, login_session=login_session)
+
 
 @app.route("/catalog/<category>/<item>/delete", methods=["GET", "POST"])
 def deleteItem(category, item):
     if "username" not in login_session:
         return redirect(url_for("showLogin"))
 
-    DBSession = sessionmaker(bind=engine)
     session = DBSession()
 
-    itemToDelete = session.query(Item).filter(func.lower(Item.name) == func.lower(item), func.lower(Item.cat_name) == func.lower(category)).one()
+    itemToDelete = session.query(Item)\
+        .filter(func.lower(Item.name) == func.lower(item),
+                func.lower(Item.cat_name) == func.lower(category)).one()
     if request.method == "POST":
         session.delete(itemToDelete)
         session.commit()
         flash("Item deleted successfully")
         return redirect(url_for("showItems", category=itemToDelete.cat_name))
     else:
-        return render_template("deleteItem.html", item=itemToDelete, login_session=login_session)
+        return render_template("deleteItem.html", item=itemToDelete,
+                               login_session=login_session)
+
 
 @app.route("/catalog.json")
 def showJson():
-    DBSession = sessionmaker(bind=engine)
     session = DBSession()
 
     categories = session.query(Category).all()
 
-    return jsonify(Category= sorted([i.serialize for i in categories]))
+    return jsonify(Category=sorted([i.serialize for i in categories]))
+
 
 if __name__ == '__main__':
     app.secret_key = "super secret key"
