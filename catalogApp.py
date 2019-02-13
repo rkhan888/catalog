@@ -514,20 +514,6 @@ def showSpecificJson(category, item):
     return jsonify(Item=[item.serialize])
 
 
-@app.route("/catalog/<category>/<item>/json")
-def showSpecificJson(category, item):
-    session = DBSession()
-
-    try:
-        item = session.query(Item).filter(func.lower(Item.name) == func.lower(
-            item), func.lower(Item.cat_name) == func.lower(category)).one()
-
-    except NoResultFound:
-        return jsonify(error="no result found")
-
-    return jsonify(Item=[item.serialize])
-
-
 @app.route("/catalog.json")
 def showJson():
     session = DBSession()
