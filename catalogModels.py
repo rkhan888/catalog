@@ -20,7 +20,8 @@ class Category(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(80), unique=True, nullable=False)
-    items = relationship("Item")
+    items = relationship("Item", cascade="delete, delete-orphan",
+                         backref="parent")
 
     @property
     def serialize(self):
@@ -50,7 +51,8 @@ class Item(Base):
             'name': self.name,
             'description': self.description,
             'id': self.id,
-            'cat_id': self.category.id
+            'cat_id': self.category.id,
+            'category': self.category.name
         }
 
 

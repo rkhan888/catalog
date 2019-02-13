@@ -18,6 +18,23 @@ DBSession = sessionmaker(bind=engine)
 # session.rollback()
 session = DBSession()
 
+# Delete specific category
+# cats = session.query(Category).all()
+# for c in cats:
+#     print(c.name)
+#
+# catToDelete = session.query(Category).filter_by(name="Khel Tamasha").one()
+# print(catToDelete.name)
+# session.delete(catToDelete)
+# session.commit()
+#
+# print("!!!DELETED!!!")
+#
+# cats = session.query(Category).all()
+# for c in cats:
+#     print(c.name)
+
+
 cat_rows_deleted = session.query(Category).delete()
 item_rows_deleted = session.query(Item).delete()
 user_rows_deleted = session.query(User).delete()

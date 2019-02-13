@@ -441,15 +441,23 @@ def addItem():
 
 @app.route("/catalog/<category>/<item>/edit", methods=["GET", "POST"])
 def editItem(category, item):
+
     if "username" not in login_session:
         return redirect(url_for("showLogin"))
 
     session = DBSession()
 
-    allCats = session.query(Category).all()
     itemToEdit = session.query(Item).\
         filter(func.lower(Item.name) == func.lower(item),
                func.lower(Item.cat_name) == func.lower(category)).one()
+    owner = session.query(User).filter_by(id=itemToEdit.user_id).one()
+
+    if owner.email != login_session["email"]:
+        flash("You cannot make changes to the items created by others")
+        return redirect(url_for("showCategories"))
+
+    allCats = session.query(Category).all()
+
     if request.method == "POST":
         if request.form["newName"]:
             itemToEdit.name = request.form["newName"]
@@ -476,6 +484,12 @@ def deleteItem(category, item):
     itemToDelete = session.query(Item)\
         .filter(func.lower(Item.name) == func.lower(item),
                 func.lower(Item.cat_name) == func.lower(category)).one()
+    owner = session.query(User).filter_by(id=itemToDelete.user_id).one()
+
+    if owner.email != login_session["email"]:
+        flash("You cannot make changes to the items created by others")
+        return redirect(url_for("showCategories"))
+
     if request.method == "POST":
         session.delete(itemToDelete)
         session.commit()
@@ -484,6 +498,20 @@ def deleteItem(category, item):
     else:
         return render_template("deleteItem.html", item=itemToDelete,
                                login_session=login_session)
+
+
+@app.route("/catalog/<category>/<item>/json")
+def showSpecificJson(category, item):
+    session = DBSession()
+
+    try:
+        item = session.query(Item).filter(func.lower(Item.name) == func.lower(
+            item), func.lower(Item.cat_name) == func.lower(category)).one()
+
+    except NoResultFound:
+        return jsonify(error="no result found")
+
+    return jsonify(Item=[item.serialize])
 
 
 @app.route("/catalog.json")
