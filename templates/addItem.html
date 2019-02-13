@@ -35,7 +35,7 @@
         <div class="col-sm-12">
             <form action="{{url_for('addItem')}}" method="POST">
                 <h4>Category Name</h4>
-                <input type="radio" id="existingCatRadio" onclick="enableOptions()" name="category">Existing Category:
+                <input type="radio" id="existingCatRadio" onclick="enableOptions()" name="category" required>Existing Category:
                 <select id="existingCat" name="catName" disabled>
                 {% for a in allCats %}
                   <option value="{{a.name}}">{{a.name}}</option>
@@ -43,16 +43,16 @@
                 </select><br>
 
                 <br>
-                <input type="radio" id="newCatRadio" onclick="enableOptions()" name="category">New Category:
-                <input type="text" id="newCat" name="catName" disabled><br>
+                <input type="radio" id="newCatRadio" onclick="enableOptions()" name="category" required>New Category:
+                <input type="text" id="newCat" name="catName" disabled required><br>
 
                 <br>
                 <h4>Item Title</h4>
-                <input type="text" name="name"><br>
+                <input type="text" name="name" required><br>
 
                 <br>
                 <h4>Item Description</h4>
-                <input type="text" name="desc">
+                <input type="text" name="desc" required>
 
                 <input type="submit" value="Create">
             </form>
